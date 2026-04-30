@@ -637,8 +637,12 @@
         <div class="glass-card">
             <div class="input-group" id="mathInputGroup">
                 <label for="topicInput">직접 입력하거나 수정할 수 있습니다</label>
-                <div class="search-wrapper" style="margin-bottom:10px;">
-                    <input type="text" id="topicInput" placeholder="원하는 출제 주제를 적어주세요!" value="" />
+                <div class="search-wrapper" style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+                    <input type="text" id="topicInput" placeholder="원하는 출제 주제를 적어주세요!" value="" style="flex:1;" />
+                    <label id="imageOptionLabel" style="display:none; cursor:pointer; align-items:center; gap:5px; background:var(--card-bg); border:1px solid var(--border-dark); padding:10px 15px; border-radius:8px; font-size:14px; color:var(--text-main); font-weight:700;">
+                        <input type="checkbox" id="requireImage" style="width:16px; height:16px;">
+                        🖼️ 이미지 포함
+                    </label>
                 </div>
                 <div class="btn-row">
                     <button class="action-btn" id="generateBtn" onclick="startGeneration()">
@@ -1087,6 +1091,20 @@
             });
         }
 
+        const imageSupportedTopics = [
+            "좌표와 그래프", "정비례와 반비례", "기본 도형", "작도와 합동", "평면도형", "입체도형", "자료의 정리와 해석",
+            "일차함수", "일차함수와 일차방정식", "일차함수와 그 그래프", "삼각형의 성질", "사각형의 성질", "도형의 닮음", "피타고라스 정리",
+            "이차함수", "삼각비", "원의 성질", "통계",
+            // JS 하드코딩된 소분류 매핑
+            "점, 선, 면, 각", "위치 관계", "평행선의 성질", "간단한 도형의 작도", "삼각형의 작도", "삼각형의 합동 조건",
+            "다각형의 내각과 외각", "다각형의 대각선", "원과 부채꼴", "부채꼴의 호의 길이와 넓이",
+            "다면체와 회전체", "기둥의 겉넓이와 부피", "뿔의 겉넓이와 부피", "구의 겉넓이와 부피",
+            "히스토그램과 도수분포다각형", "도수분포표",
+            "함수의 뜻", "일차함수의 뜻과 그래프", "절편과 기울기", "일차함수의 그래프의 성질",
+            "이등변삼각형과 직각삼각형", "삼각형의 외심", "삼각형의 내심", "평행사변형", "여러 가지 사각형",
+            "삼각형의 닮음 조건", "평행선과 선분의 길이의 비", "삼각형의 무게중심", "피타고라스 정리의 이해", "피타고라스 정리의 활용"
+        ];
+
         function fillTopic(topic, element) {
             // 모든 칩의 active 상태 초기화
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -1096,6 +1114,18 @@
             }
 
             input.value = topic + " 실전 단원 평가 문항";
+            
+            // 이미지 체크박스 표시 로직
+            const labelEl = document.getElementById('imageOptionLabel');
+            const checkboxEl = document.getElementById('requireImage');
+            if (currentSubjectId === 'math' && imageSupportedTopics.includes(topic)) {
+                labelEl.style.display = 'flex';
+                checkboxEl.checked = false; // 기본값 X
+            } else {
+                labelEl.style.display = 'none';
+                checkboxEl.checked = false;
+            }
+
             // 시각적 톡 튀는 강조
             input.style.transform = 'scale(1.02)';
             setTimeout(() => input.style.transform = 'scale(1)', 150);
@@ -1196,8 +1226,9 @@
             window.updateStageRealtime(1, '파이프라인 준비 중...', 'active');
 
             try {
+                const requireImage = document.getElementById('requireImage').checked;
                 // python 백엔드 함수 호출 - 학년과 주제 전달
-                const resultObj = await pywebview.api.generate_crew(currentSelectedGrade, topic, useFastMode, currentSubjectId);
+                const resultObj = await pywebview.api.generate_crew(currentSelectedGrade, topic, useFastMode, currentSubjectId, requireImage);
 
                 
                 window.updateStageRealtime(4, '최종 세팅 완료 및 출력 준비 완료', 'done');
@@ -1276,7 +1307,8 @@
             window.updateStageRealtime(1, '시험지 출제 시작...', 'active');
 
             try {
-                const result = await pywebview.api.generate_exam(currentSelectedGrade, topic, 10, useFastMode, currentSubjectId);
+                const requireImage = document.getElementById('requireImage').checked;
+                const result = await pywebview.api.generate_exam(currentSelectedGrade, topic, 10, useFastMode, currentSubjectId, requireImage);
 
 
                 if (result.error) throw new Error(result.error);
@@ -1354,7 +1386,8 @@
             window.updateStageRealtime(1, '시험지+해설 출제 시작...', 'active');
 
             try {
-                const result = await pywebview.api.generate_exam_full(currentSelectedGrade, topic, 10, useFastMode, currentSubjectId);
+                const requireImage = document.getElementById('requireImage').checked;
+                const result = await pywebview.api.generate_exam_full(currentSelectedGrade, topic, 10, useFastMode, currentSubjectId, requireImage);
 
                 if (result.error) throw new Error(result.error);
 

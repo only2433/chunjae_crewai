@@ -40,7 +40,7 @@ class Api:
                 print("JS 통신 에러:", e)
         return progress_callback
 
-    def generate_crew(self, grade: str, topic: str, use_fast: bool = False, subject_id: str = "math"):
+    def generate_crew(self, grade: str, topic: str, use_fast: bool = False, subject_id: str = "math", require_image: bool = False):
         """JS에서 호출하여 CrewAI 1문제 파이프라인을 실행합니다.
 
         Args:
@@ -48,10 +48,11 @@ class Api:
             topic: 단원/주제
             use_fast: True이면 GPT 빠른 모드
             subject_id: "math" | "english" (기본값: "math")
+            require_image: True이면 도형 시각화 에이전트 실행 (예정)
         """
         subject = get_subject(subject_id)
         mode = "빠른(GPT)" if use_fast else "로컬"
-        print(f"\n[UI 요청] {subject.label} | {mode} | {grade} | {topic}")
+        print(f"\n[UI 요청] {subject.label} | {mode} | {grade} | {topic} | Image: {require_image}")
 
         try:
             result = run_pipeline(
@@ -60,13 +61,14 @@ class Api:
                 topic=topic,
                 progress_callback=self._make_progress_callback(),
                 use_fast=use_fast
+                # TODO: Pass require_image to run_pipeline when Step 6 is implemented
             )
             return result
         except Exception as e:
             return {"error": str(e), "problem": f"**오류 발생:** {str(e)}", "explanation": ""}
 
     def generate_exam(self, grade: str, topic: str, count: int = 10,
-                      use_fast: bool = False, subject_id: str = "math"):
+                      use_fast: bool = False, subject_id: str = "math", require_image: bool = False):
         """시험지 모드: 여러 문제를 생성하고 PDF로 저장합니다.
 
         Args:
@@ -75,10 +77,11 @@ class Api:
             count: 문제 수 (기본 10)
             use_fast: True이면 GPT 빠른 모드
             subject_id: "math" | "english"
+            require_image: True이면 도형 시각화 포함 (예정)
         """
         subject = get_subject(subject_id)
         mode = "빠른(GPT)" if use_fast else "로컬"
-        print(f"\n[시험지 요청] {subject.label} | {mode} | {grade} | {topic} | {count}문제")
+        print(f"\n[시험지 요청] {subject.label} | {mode} | {grade} | {topic} | {count}문제 | Image: {require_image}")
 
         try:
             result = run_exam_pipeline(
@@ -89,13 +92,14 @@ class Api:
                 progress_callback=self._make_progress_callback(),
                 with_explanation=False,
                 use_fast=use_fast
+                # TODO: Pass require_image when Step 6 is implemented
             )
             return result
         except Exception as e:
             return {"error": str(e)}
 
     def generate_exam_full(self, grade: str, topic: str, count: int = 10,
-                           use_fast: bool = False, subject_id: str = "math"):
+                           use_fast: bool = False, subject_id: str = "math", require_image: bool = False):
         """시험지 모드 (해설 포함): 문제 + 해설/정답을 생성하고 PDF로 저장합니다.
 
         Args:
@@ -104,10 +108,11 @@ class Api:
             count: 문제 수 (기본 10)
             use_fast: True이면 GPT 빠른 모드
             subject_id: "math" | "english"
+            require_image: True이면 도형 시각화 포함 (예정)
         """
         subject = get_subject(subject_id)
         mode = "빠른(GPT)" if use_fast else "로컬"
-        print(f"\n[시험지+해설 요청] {subject.label} | {mode} | {grade} | {topic} | {count}문제")
+        print(f"\n[시험지+해설 요청] {subject.label} | {mode} | {grade} | {topic} | {count}문제 | Image: {require_image}")
 
         try:
             result = run_exam_pipeline(
