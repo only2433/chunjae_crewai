@@ -91,8 +91,8 @@ class Api:
                 count=count,
                 progress_callback=self._make_progress_callback(),
                 with_explanation=False,
-                use_fast=use_fast
-                # TODO: Pass require_image when Step 6 is implemented
+                use_fast=use_fast,
+                require_image=require_image
             )
             return result
         except Exception as e:
@@ -122,7 +122,8 @@ class Api:
                 count=count,
                 progress_callback=self._make_progress_callback(),
                 with_explanation=True,
-                use_fast=use_fast
+                use_fast=use_fast,
+                require_image=require_image
             )
             return result
         except Exception as e:
