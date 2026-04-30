@@ -60,8 +60,8 @@ class Api:
                 grade=grade,
                 topic=topic,
                 progress_callback=self._make_progress_callback(),
-                use_fast=use_fast
-                # TODO: Pass require_image to run_pipeline when Step 6 is implemented
+                use_fast=use_fast,
+                require_image=require_image
             )
             return result
         except Exception as e:

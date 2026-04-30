@@ -51,7 +51,7 @@ tests/test_pipeline.py::test_crew_orchestration PASSED            [100%]
 ## 📅 대기 중인 향후 개발 계획 (Backlog)
 (사용자의 지시가 있을 때만 아래 기능을 적용합니다.)
 
-- [ ] **Step 6: 시각화 에이전트(Illustrator) 탑재 (Python/Matplotlib 기반)**
+- [x] **Step 6: 시각화 에이전트(Illustrator) 탑재 (Python/Matplotlib 기반)**
   - **내용**: 수학 도형(부채꼴, 원형 정원, 입체도형 등)과 1~2차 함수 그래프를 시각화하는 파이프라인 추가.
-  - **방식**: AI 에이전트가 `Penrose` 대신 성공률이 가장 압도적으로 높은 **파이썬(Matplotlib)** 그리기 코드를 생성. `core/pipeline.py` 또는 `illustrator.py`에서 해당 파이썬 스크립트를 조용히 실행(subprocess)하여 `.png` 형태의 결과물을 뽑아낸 뒤, PDF와 UI에 자동 삽입함.
+  - **방식**: AI 에이전트가 `Penrose` 대신 성공률이 가장 압도적으로 높은 **파이썬(Matplotlib)** 그리기 코드를 생성. `core/pipeline.py`에서 해당 파이썬 스크립트를 조용히 실행(subprocess)하여 `.png` 형태의 결과물을 뽑아낸 뒤, PDF와 UI에 자동 삽입함.
   - **장점**: DALL-E와 같은 '환각 현상'이 전혀 없으며, 교과서 퀄리티와 동일하게 각도/길이/기호 등을 완벽히 통제 가능.

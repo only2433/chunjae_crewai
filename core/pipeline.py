@@ -54,10 +54,14 @@ def _remove_answer_leak(text: str) -> str:
 
 # ── 그래프/도형 이미지 생성 (수학 전용) ─────────────────────────────────────
 
-def _run_python_illustrator(prob_text: str) -> str | None:
+def _run_python_illustrator(prob_text: str, force_draw: bool = False) -> str | None:
     """
     문제 텍스트를 분석하여 matplotlib 시각화 코드를 GPT-4o로 생성하고,
     서브프로세스로 실행하여 ui/problem_image.png를 저장합니다.
+
+    Args:
+        prob_text: 분석할 문제 텍스트
+        force_draw: True이면 판단을 무시하고 무조건 그림을 그리도록 강제
 
     Returns:
         "problem_image.png" — 이미지 생성 성공
@@ -80,6 +84,9 @@ Requirements:
    - Only output pure Python code inside a ```python ``` block. Do not write any other explanations.
 
 Make sure the code is syntactically correct and imports all necessary modules."""
+
+    if force_draw:
+        prompt += "\n\nCRITICAL INSTRUCTION: The user has explicitly checked the 'Include Image' option. You MUST NOT output 'NO_IMAGE_NEEDED'. You MUST write a python script to draw the most relevant geometric or mathematical diagram for this problem."
 
     try:
         client = OpenAI()
@@ -224,7 +231,7 @@ def _render_explanation_html(final_explanation: str) -> str:
 
 # ── 1문제 생성 파이프라인 ────────────────────────────────────────────────────
 
-def run_pipeline(subject, grade: str, topic: str, progress_callback=None, use_fast: bool = False) -> dict:
+def run_pipeline(subject, grade: str, topic: str, progress_callback=None, use_fast: bool = False, require_image: bool = False) -> dict:
     """
     1문제 생성 전체 파이프라인을 실행합니다.
     (출제 → 검수 → 해설 → 시각화 → 최종감수)
@@ -235,6 +242,7 @@ def run_pipeline(subject, grade: str, topic: str, progress_callback=None, use_fa
         topic: 단원/주제 (e.g. "소인수분해")
         progress_callback: (stage, msg, status) 형태의 UI 알림 콜백
         use_fast: True이면 출제/해설도 GPT-4o-mini 사용
+        require_image: True이면 도형 시각화 에이전트를 강제 실행
 
     Returns:
         {"problem": str, "explanation": str, "image": str | None}
@@ -295,8 +303,10 @@ def run_pipeline(subject, grade: str, topic: str, progress_callback=None, use_fa
             return ans.strip()
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # 이미지 생성과 해설 생성을 병렬 실행
-            future_image = executor.submit(lambda: _run_python_illustrator(final_problem))
+            # 이미지 생성과 해설 생성을 병렬 실행 (체크박스가 켜진 경우에만 강제 실행)
+            future_image = None
+            if require_image and subject.subject_id == "math":
+                future_image = executor.submit(lambda: _run_python_illustrator(final_problem, force_draw=True))
 
             problem_passed = False
             for exp_attempt in range(3):
@@ -320,7 +330,10 @@ def run_pipeline(subject, grade: str, topic: str, progress_callback=None, use_fa
                     notify(4, f"문제 결함 적발 (재출제): {review_result[:40]}...", "error")
                     break
 
-            img_path = future_image.result()
+            if future_image:
+                img_path = future_image.result()
+            else:
+                img_path = None
 
         if problem_passed or attempt == 2:
             break
