@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chunjae EduCrew AI</title>
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            startup: {
+                typeset: false // API 결과값을 받은 후 수동 렌더링
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #fafafa;
+            --card-bg: #ffffff;
+            --text-main: #18181b;
+            --text-muted: #71717a;
+            --border-light: #f4f4f5;
+            --border-dark: #e4e4e7;
+            --accent: #09090b;
+            --accent-hover: #27272a;
+            --primary: #2563eb;         /* 수학 블루 */
+            --primary-light: #eff6ff;
+            --english: #16a34a;         /* 영어 그린 */
+            --english-light: #f0fdf4;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --blur: blur(24px);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #09090b;
+                --card-bg: rgba(24, 24, 27, 0.8);
+                --text-main: #f4f4f5;
+                --text-muted: #a1a1aa;
+                --border-light: #27272a;
+                --border-dark: #3f3f46;
+                --accent: #ffffff;
+                --accent-hover: #e4e4e7;
+                --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+            overflow-y: auto;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,14%,0.03) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.03) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.03) 0, transparent 50%);
+            letter-spacing: -0.01em;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-family: 'Pretendard', serif;
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+        .header p {
+            font-size: 17px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ── Glass Card ── */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
+        }
+
+        /* ── Input Section ── */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-left: 6px;
+        }
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 20px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
+            background: var(--bg-color);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        input[type="text"]:focus {
+            background: var(--card-bg);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light), inset 0 2px 4px rgba(0,0,0,0.01);
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button.action-btn {
+            flex: 1;
+            background: var(--accent);
+            color: var(--card-bg);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+        button.action-btn.exam-btn {
+            background: var(--primary);
+            color: white;
+            flex: 1.4;
+        }
+        button.action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        }
+        button.action-btn.exam-btn:hover {
+            box-shadow: 0 6px 16px rgba(37,99,235,0.35);
+        }
+        button.action-btn:active  { transform: translateY(1px); box-shadow: none; }
+        button.action-btn:disabled {
+            background: var(--border-dark);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        /* PDF 다운로드 버튼 */
+        .pdf-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+            transition: all 0.25s ease;
+            margin-top: 20px;
+        }
+        .pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.4); }
+        /* 시험지 문제 카드 */
+        .exam-problem-card {
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-sm);
+            padding: 18px 22px;
+            margin-bottom: 14px;
+            background: var(--bg-color);
+        }
+        .exam-problem-num {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        /* ── Subject Tabs ── */
+        .subject-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .subject-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border: 2px solid var(--border-dark);
+            background: transparent;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            color: var(--text-muted);
+        }
+        .subject-tab:hover { border-color: var(--text-muted); color: var(--text-main); }
+        .subject-tab.active[data-subject="math"] {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+        .subject-tab.active[data-subject="english"] {
+            background: var(--english-light);
+            border-color: var(--english);
+            color: var(--english);
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+        }
+        .subject-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+        .subject-tab.active[data-subject="math"] .subject-badge { background: var(--primary); color: white; }
+        .subject-tab.active[data-subject="english"] .subject-badge { background: var(--english); color: white; }
+
+        /* ── Grade Tabs & Topic Chips ── */
+        .grade-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 6px;
+            background: var(--border-light);
+            border-radius: var(--radius-md);
+            width: fit-content;
+            border: 1px solid var(--border-dark);
+        }
+        .grade-tab {
+            padding: 10px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+        .grade-tab:hover {
+            color: var(--text-main);
+            background: rgba(0,0,0,0.02);
+        }
+        .grade-tab.active {
+            background: var(--card-bg);
+            color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            margin-top: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .topics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chapter-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-md);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+        }
+        .chapter-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .chapter-card h4 {
+            font-size: 17px;
+            color: var(--text-main);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 12px;
+            margin-bottom: 4px;
+        }
+
+        .sub-chapter h5 {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 3px solid var(--border-dark);
+        }
+
+        .topic-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .chip {
+            padding: 10px 18px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-dark);
+            color: var(--text-muted);
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+        }
+        .chip:hover {
+            background: var(--bg-color);
+            color: var(--text-main);
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .chip.active {
+            background: var(--accent);
+            color: var(--card-bg);
+            border-color: var(--accent);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px) scale(1.02);
+            font-weight: 700;
+        }
+
+        /* ── Progress Indicators (Stages) ── */
+        #progressContainer {
+            display: none;
+            padding: 8px 0 8px;
+        }
+        .stage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .stage-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 18px 22px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            opacity: 0.45;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stage-item.active {
+            opacity: 1;
+            background: var(--card-bg);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: scale(1.02);
+        }
+        /* 로딩바: active 단계 하단에 펄싱 바 표시 */
+        .stage-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 40%;
+            background: var(--primary);
+            border-radius: 0 2px 2px 0;
+            animation: loadingBar 1.4s ease-in-out infinite;
+        }
+        @keyframes loadingBar {
+            0%   { left: -40%; width: 40%; }
+            50%  { left: 35%; width: 50%; }
+            100% { left: 100%; width: 40%; }
+        }
+        .stage-item.completed {
+            opacity: 0.8;
+            background: var(--bg-color);
+            border-color: var(--border-dark);
+        }
+        .stage-icon {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 700;
+            background: var(--border-dark);
+            color: var(--text-muted);
+        }
+        .stage-item.active .stage-icon {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 15px var(--primary-light);
+            animation: iconPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes iconPulse {
+            0%, 100% { box-shadow: 0 0 8px var(--primary-light); }
+            50% { box-shadow: 0 0 20px rgba(37,99,235,0.35); }
+        }
+        .stage-item.completed .stage-icon {
+            background: var(--text-main);
+            color: var(--card-bg);
+        }
+        .stage-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .stage-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .stage-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── Output Result ── */
+        #resultContainer {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+        .markdown-body {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-main);
+            overflow-wrap: break-word;
+        }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            margin-top: 28px;
+            margin-bottom: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+        .markdown-body h2 { font-size: 20px; border-bottom: 1px solid var(--apple-border); padding-bottom: 8px; }
+        .markdown-body h3 { font-size: 17px; }
+        .markdown-body p { margin-bottom: 16px; }
+        .markdown-body ul, .markdown-body ol { margin-bottom: 16px; padding-left: 24px; }
+        .markdown-body li { margin-bottom: 6px; }
+        .markdown-body pre {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+        .markdown-body code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 13.5px;
+            color: #d1d1d1;
+        }
+        .markdown-body p code {
+            background: rgba(120, 120, 128, 0.1);
+            color: var(--apple-accent);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        /* ── 모델 토글 스위치 ── */
+        .model-toggle-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-dark);
+            border-radius: 40px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+            margin-top: 20px;
+        }
+        .model-toggle-bar:hover { box-shadow: var(--shadow-md); }
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { display: none; }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #d4d4d8;
+            border-radius: 22px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px; height: 16px;
+            left: 3px; top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #7c3aed; }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+        .model-label-local  { color: var(--text-muted); }
+        .model-label-fast   { color: #7c3aed; }
+        .model-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .badge-local { background: #f4f4f5; color: #71717a; }
+        .badge-fast  { background: #ede9fe; color: #7c3aed; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header" style="position:relative;">
+            <h1>Chunjae EduCrew AI</h1>
+            <p>다중 AI 에이전트 기반 하이브리드 문항 출제 시스템</p>
+            <!-- 모델 토글 스위치 -->
+            <label class="model-toggle-bar" id="modelToggleBar" title="출제/해설 모델 전환">
+                <span class="model-label-local" id="labelLocal">🏠 로컬 모델</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="modelToggle" onchange="onModelToggle(this)">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="model-label-fast" id="labelFast" style="opacity:0.4;">⚡ 빠른 모드</span>
+                <span class="model-badge badge-local" id="modelBadge">qwen3:4b</span>
+            </label>
+        </div>
+
+        <!-- 과목 선택 탭 -->
+        <div class="glass-card" style="padding: 20px 32px;">
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 14px;">과목을 선택하세요</p>
+            <div class="subject-tabs">
+                <button class="subject-tab active" data-subject="math" onclick="selectSubject('math')">
+                    📐 수학
+                    <span class="subject-badge">Math</span>
+                </button>
+                <button class="subject-tab" data-subject="english" onclick="selectSubject('english')">
+                    🔤 영어
+                    <span class="subject-badge">English</span>
+                </button>
+            </div>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; margin-top: 4px;">대상 학년을 선택하세요</p>
+            <div class="grade-tabs" id="gradeTabs">
+                <!-- JS에서 채워짐 -->
+            </div>
+            <div id="topicChips" class="topics-grid">
+                <!-- JS에서 채워짐 -->
+            </div>
+        </div>
+
+        <!-- 입력 폼 -->
+        <div class="glass-card">
+            <div class="input-group" id="mathInputGroup">
+                <label for="topicInput">직접 입력하거나 수정할 수 있습니다</label>
+                <div class="search-wrapper" style="margin-bottom:10px;">
+                    <input type="text" id="topicInput" placeholder="원하는 출제 주제를 적어주세요!" value="" />
+                </div>
+                <div class="btn-row">
+                    <button class="action-btn" id="generateBtn" onclick="startGeneration()">
+                        📝 1문제 출제
+                    </button>
+                    <button class="action-btn exam-btn" id="examBtn" onclick="startExam()">
+                        📋 시험지 (10문제)
+                    </button>
+                    <button class="action-btn exam-btn" id="examFullBtn" onclick="startExamFull()" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">
+                        📖 시험지+해설 (10문제)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 영어용 입력 폼 -->
+            <div class="input-group" id="englishInputGroup" style="display:none;">
+                <label>1. 실시간 BBC 기사 가져오기</label>
+                <div class="btn-row">
+                    <button class="action-btn" onclick="fetchBBCNews()" id="bbcFetchBtn" style="background:#16a34a; color:white;">
+                        📰 BBC 최신 뉴스 목록 가져오기
+                    </button>
+                </div>
+                <div id="bbcNewsList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px; max-height: 250px; overflow-y: auto; padding-right: 5px;"></div>
+                
+                <label style="margin-top:15px;">2. 문제 유형 선택 (다중 선택 가능)</label>
+                <div style="display:flex; flex-wrap:wrap; gap:15px; margin-top:5px; padding: 10px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-dark);">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;"><input type="checkbox" name="qType" value="blank" checked> 빈칸 추론</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;"><input type="checkbox" name="qType" value="topic" checked> 주제 파악</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;"><input type="checkbox" name="qType" value="grammar" checked> 어법 확인</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;"><input type="checkbox" name="qType" value="true_false"> 내용 일치 (T/F)</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;"><input type="checkbox" name="qType" value="vocab"> 어휘 확인</label>
+                </div>
+                
+                <div class="btn-row" style="margin-top:15px;">
+                    <button class="action-btn exam-btn" id="generateEnglishBtn" onclick="startEnglishGeneration()" disabled style="background:linear-gradient(135deg,#16a34a,#15803d);">
+                        ✨ 지문 기반 영어 문제 세트 생성
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 진행 상태 인디케이터 -->
+        <div class="glass-card" id="progressContainer">
+            <div class="stage-list">
+                <div class="stage-item" id="stage1">
+                    <div class="stage-icon">1</div>
+                    <div class="stage-text">
+                        <span class="stage-title">출제 마스터 (Ollama)</span>
+                        <span class="stage-desc" id="sDesc1">대기 중...</span>
+                    </div>
+                </div>
+                <div class="stage-item" id="stage2">
+                    <div class="stage-icon">2</div>
+                    <div class="stage-text">
+                        <span class="stage-title">문제 체크 감수관 (OpenAI)</span>
+                        <span class="stage-desc" id="sDesc2">대기 중...</span>
+                    </div>
+                </div>
+                <div class="stage-item" id="stage3">
+                    <div class="stage-icon">3</div>
+                    <div class="stage-text">
+                        <span class="stage-title">전문 해설가 (Ollama)</span>
+                        <span class="stage-desc" id="sDesc3">대기 중...</span>
+                    </div>
+                </div>
+                <div class="stage-item" id="stage4">
+                    <div class="stage-icon">4</div>
+                    <div class="stage-text">
+                        <span class="stage-title" style="color:var(--primary)">최종 감수 위원 (OpenAI)</span>
+                        <span class="stage-desc" id="sDesc4">대기 중...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1문제 결과 영역 -->
+        <div id="resultWrapper" style="display: none; flex-direction: column; gap: 28px; width: 100%;">
+            <div class="glass-card" style="border-top: 6px solid var(--text-main); padding: 36px 40px; background-color: var(--card-bg); margin: 0 4px;">
+                <h3 id="problemTitle" style="font-size:20px; margin-bottom:20px; color:var(--text-main); font-weight:800; border-bottom:1px solid var(--border-dark); padding-bottom:14px;">📝 출제된 문제</h3>
+                <div style="display: flex; gap: 28px; align-items: flex-start;">
+                    <div id="problemImage" style="display: none; flex-shrink: 0;">
+                        <img id="mathDrawnImage" src="" alt="자동 생성 수학 그래프" style="width: 300px; border-radius: 14px; box-shadow: var(--shadow-md); border: 1px solid var(--border-dark); object-fit: contain; background: white;" />
+                    </div>
+                    <div class="markdown-body" id="problemContent" style="font-size: 17px; font-weight: 500; color: var(--text-main); line-height: 1.9; flex: 1;"></div>
+                </div>
+            </div>
+            <div class="glass-card" style="border-top: 6px solid var(--primary); padding: 36px 40px; background-color: var(--bg-color); margin: 0 4px;">
+                <h3 style="font-size:18px; margin-bottom:20px; color:var(--primary); font-weight:800; border-bottom:1px solid var(--border-dark); padding-bottom:14px;">💡 상세 해설 및 정답</h3>
+                <div class="markdown-body" id="explanationContent" style="font-size: 15px; color: var(--text-main); line-height: 1.9;"></div>
+            </div>
+            <div class="glass-card" id="vocabCardWrapper" style="display: none; border-top: 6px solid #f59e0b; padding: 36px 40px; background-color: var(--bg-color); margin: 0 4px;">
+                <h3 style="font-size:18px; margin-bottom:20px; color:#d97706; font-weight:800; border-bottom:1px solid var(--border-dark); padding-bottom:14px;">📖 필수 단어장</h3>
+                <div class="markdown-body" id="vocabContent" style="font-size: 15px; color: var(--text-main); line-height: 1.9;"></div>
+            </div>
+            <div style="display: flex; justify-content: center; margin-top: 10px;">
+                <button class="action-btn" id="englishPdfBtn" onclick="openPdf()" style="display:none; width:100%; max-width:400px; padding:16px 24px; font-size:16px; font-weight:700; background:linear-gradient(135deg,#16a34a,#15803d); color:white; border-radius:12px; box-shadow:0 4px 12px rgba(22,163,74,0.3);">
+                    📄 생성된 시험지 전체 내용 PDF로 열기 / 저장
+                </button>
+            </div>
+        </div>
+
+        <!-- 시험지 결과 영역 -->
+        <div id="examResultWrapper" style="display:none; flex-direction:column; gap:20px; width:100%;">
+            <div class="glass-card" style="border-top:6px solid var(--primary); padding:36px 40px; margin:0 4px;">
+                <h3 style="font-size:20px; font-weight:800; color:var(--primary); margin-bottom:6px;">📋 시험지 생성 완료</h3>
+                <p id="examSummary" style="color:var(--text-muted); font-size:14px; margin-bottom:20px;"></p>
+                <div id="examProblemList"></div>
+                <div style="text-align:center; margin-top:10px;">
+                    <button class="pdf-btn" id="pdfDownloadBtn" onclick="openPdf()">📄 PDF 열기 / 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('generateBtn');
+        const input = document.getElementById('topicInput');
+
+        let progressInterval;
+        let currentSelectedGrade = '중1';
+        let currentSubjectId = 'math';   // 현재 선택된 과목 ID
+        let useFastMode = false;
+
+        // ── 모델 토글 핸들러 ────────────────────────────────────────
+        function onModelToggle(checkbox) {
+            useFastMode = checkbox.checked;
+            const badge   = document.getElementById('modelBadge');
+            const lblFast = document.getElementById('labelFast');
+            const lblLocal = document.getElementById('labelLocal');
+            if (useFastMode) {
+                badge.textContent = 'gpt-4o-mini';
+                badge.className = 'model-badge badge-fast';
+                lblFast.style.opacity  = '1';
+                lblLocal.style.opacity = '0.4';
+            } else {
+                badge.textContent = 'qwen3:4b';
+                badge.className = 'model-badge badge-local';
+                lblFast.style.opacity  = '0.4';
+                lblLocal.style.opacity = '1';
+            }
+
+            // 수학 과목일 경우 스테이지별 출제 엔진 텍스트 스위칭
+            if (currentSubjectId === 'math') {
+                const titleEls = document.querySelectorAll('.stage-title');
+                if (titleEls.length >= 4) {
+                    const engineName = useFastMode ? 'OpenAI' : 'Ollama';
+                    titleEls[0].textContent = `출제 마스터 (${engineName})`;
+                    titleEls[2].textContent = `전문 해설가 (${engineName})`;
+                }
+            }
+        }
+        // ────────────────────────────────────────────────────────────
+
+        // ── 과목별 학년 목록 ────────────────────────────────────
+        const gradesBySubject = {
+            math:    ['중1', '중2'],
+            english: ['중1', '중2', '중3']
+        };
+
+        // ── 과목 선택 핸들러 ─────────────────────────────────────
+        function selectSubject(subjectId) {
+            currentSubjectId = subjectId;
+            document.querySelectorAll('.subject-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.subject === subjectId);
+            });
+
+            // 프라이머리 컬러 전환 및 뷰 상태 변경
+            const root = document.documentElement;
+            const toggleCb = document.getElementById('modelToggle');
+            const toggleBar = document.getElementById('modelToggleBar');
+            
+            const mathGroup = document.getElementById('mathInputGroup');
+            const englishGroup = document.getElementById('englishInputGroup');
+            const chipsGroup = document.getElementById('topicChips');
+
+            if (subjectId === 'english') {
+                root.style.setProperty('--primary', '#16a34a');
+                root.style.setProperty('--primary-light', '#f0fdf4');
+                
+                toggleCb.checked = true;
+                toggleCb.disabled = true;
+                toggleBar.style.cursor = 'not-allowed';
+                toggleBar.title = '영어 과목은 문제 퀄리티를 위해 빠른(GPT) 모드가 강제 적용됩니다.';
+                onModelToggle(toggleCb);
+
+                mathGroup.style.display = 'none';
+                englishGroup.style.display = 'flex';
+                chipsGroup.style.display = 'none'; // 영어를 선택하면 칩도 숨김
+                
+                const st2 = document.getElementById('stage2');
+                const st3 = document.getElementById('stage3');
+                const st4 = document.getElementById('stage4');
+                if(st2) st2.style.display = 'none';
+                if(st3) st3.style.display = 'none';
+                if(st4) st4.style.display = 'none';
+
+                const titleEls = document.querySelectorAll('.stage-title');
+                if (titleEls.length >= 1) {
+                    titleEls[0].textContent = 'AI 영어 지문/문제 출제 파이프라인 (GPT-4o)';
+                }
+
+            } else {
+                root.style.setProperty('--primary', '#2563eb');
+                root.style.setProperty('--primary-light', '#eff6ff');
+                
+                toggleCb.disabled = false;
+                toggleBar.style.cursor = 'pointer';
+                toggleBar.title = '출제/해설 모델 전환 (로컬 ↔ GPT)';
+
+                mathGroup.style.display = 'flex';
+                englishGroup.style.display = 'none';
+                chipsGroup.style.display = 'grid'; // 수학 선택시 다시 보임
+                
+                const st2 = document.getElementById('stage2');
+                const st3 = document.getElementById('stage3');
+                const st4 = document.getElementById('stage4');
+                if(st2) st2.style.display = 'flex';
+                if(st3) st3.style.display = 'flex';
+                if(st4) st4.style.display = 'flex';
+
+                const titleEls = document.querySelectorAll('.stage-title');
+                if (titleEls.length >= 4) {
+                    const engineName = useFastMode ? 'OpenAI' : 'Ollama';
+                    titleEls[0].textContent = `출제 마스터 (${engineName})`;
+                    titleEls[1].textContent = '문제 체크 감수관 (OpenAI)';
+                    titleEls[2].textContent = `전문 해설가 (${engineName})`;
+                    titleEls[3].textContent = '최종 감수 위원 (OpenAI)';
+                }
+            }
+
+            // 헤더 타이틀 업데이트
+            const subjectLabel = subjectId === 'english' ? '영어 지문' : '수학';
+            document.getElementById('problemTitle').textContent =
+                `📝 출제된 ${subjectLabel} 문제`;
+
+            // 학년 탭 재구성
+            const grades = gradesBySubject[subjectId] || ['중1', '중2'];
+            currentSelectedGrade = grades[0];
+            renderGradeTabs(grades);
+            selectGrade(grades[0]);
+
+            // 입력창 힌트 변경
+            input.placeholder = subjectId === 'english'
+                ? '영어 출제는 아래 BBC 기사를 선택해주세요.'
+                : '수학 출제 주제를 입력하거나 단원 칩을 클릭하세요';
+        }
+
+        function renderGradeTabs(grades) {
+            const container = document.getElementById('gradeTabs');
+            container.innerHTML = '';
+            grades.forEach((g, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'grade-tab' + (idx === 0 ? ' active' : '');
+                btn.innerText = g + (currentSubjectId === 'math' ? ' 수학' : ' 영어');
+                btn.onclick = () => selectGrade(g);
+                container.appendChild(btn);
+            });
+        }
+        // ────────────────────────────────────────────────────────
+
+        // 학년별 계층형 주제 DB (수학)
+        const topicsByGradeMath = {
+            '중1': [
+                {
+                    chapter: "Ⅰ. 수와 연산",
+                    subChapters: [
+                        { name: "1. 소인수분해", topics: ["소인수분해", "최대공약수", "최소공배수"] },
+                        { name: "2. 정수와 유리수", topics: ["정수와 유리수의 뜻과 대소 관계", "정수의 덧셈과 뺄셈", "유리수의 곱셈과 나눗셈"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅱ. 문자와 식",
+                    subChapters: [
+                        { name: "1. 문자의 사용과 식", topics: ["문자를 사용한 식", "식의 값", "일차식", "일차식의 계산"] },
+                        { name: "2. 일차방정식", topics: ["방정식과 그 해", "일차방정식과 그 풀이"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅲ. 좌표평면과 그래프",
+                    subChapters: [
+                        { name: "1. 좌표평면과 그래프", topics: ["순서쌍과 좌표", "그래프"] },
+                        { name: "2. 정비례와 반비례", topics: ["정비례", "반비례"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅳ. 도형의 기초",
+                    subChapters: [
+                        { name: "1. 기본 도형", topics: ["점, 선, 면, 각", "위치 관계", "평행선의 성질"] },
+                        { name: "2. 작도와 합동", topics: ["간단한 도형의 작도", "삼각형의 작도", "삼각형의 합동 조건"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅴ. 도형의 성질",
+                    subChapters: [
+                        { name: "1. 평면도형의 성질", topics: ["다각형의 내각과 외각", "다각형의 대각선", "원과 부채꼴", "부채꼴의 호의 길이와 넓이"] },
+                        { name: "2. 입체도형의 성질", topics: ["다면체와 회전체", "기둥의 겉넓이와 부피", "뿔의 겉넓이와 부피", "구의 겉넓이와 부피"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅵ. 통계",
+                    subChapters: [
+                        { name: "1. 자료의 정리와 해석", topics: ["대푯값", "도수분포표", "히스토그램과 도수분포다각형", "상대도수", "통계적 탐구 문제"] }
+                    ]
+                }
+            ],
+            '중2': [
+                {
+                    chapter: "Ⅰ. 수와 식",
+                    subChapters: [
+                        { name: "1. 유리수와 순환소수", topics: ['유리수의 소수 표현', '순환소수의 분수 표현'] },
+                        { name: "2. 식의 계산", topics: ['지수법칙', '단항식의 계산', '다항식의 계산'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅱ. 부등식과 연립방정식",
+                    subChapters: [
+                        { name: "1. 연립일차부등식", topics: ['부등식과 그 해', '부등식의 성질', '일차부등식의 풀이'] },
+                        { name: "2. 연립일차방정식", topics: ['연립일차방정식과 그 해', '연립일차방정식의 풀이', '연립일차방정식의 활용'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅲ. 일차함수",
+                    subChapters: [
+                        { name: "1. 일차함수와 그 그래프", topics: ['함수의 뜻', '일차함수의 뜻과 그래프', '절편과 기울기', '일차함수의 그래프의 성질'] },
+                        { name: "2. 일차함수와 일차방정식", topics: ['일차함수와 일차방정식', '일차함수의 식 구하기', '일차함수의 그래프와 연립일차방정식'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅳ. 삼각형과 사각형의 성질",
+                    subChapters: [
+                        { name: "1. 삼각형의 성질", topics: ['이등변삼각형과 직각삼각형', '삼각형의 외심', '삼각형의 내심'] },
+                        { name: "2. 사각형의 성질", topics: ['평행사변형', '여러 가지 사각형'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅴ. 도형의 닮음과 피타고라스 정리",
+                    subChapters: [
+                        { name: "1. 도형의 닮음", topics: ['도형의 닮음', '삼각형의 닮음 조건', '평행선과 선분의 길이의 비', '삼각형의 무게중심'] },
+                        { name: "2. 피타고라스 정리", topics: ['피타고라스 정리의 이해', '피타고라스 정리의 활용'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅵ. 확률",
+                    subChapters: [
+                        { name: "1. 경우의 수와 확률", topics: ['경우의 수', '확률의 뜻', '확률의 성질', '확률의 계산'] }
+                    ]
+                }
+            ]
+        };
+
+        // 학년별 계층형 주제 DB (영어)
+        const topicsByGradeEnglish = {
+            '중1': [
+                { chapter: "Ⅰ. 문법 기초",
+                  subChapters: [
+                    { name: "1. 기본 동사", topics: ["be동사와 일반동사", "현재시제와 진행형", "조동사 (can, may, must)"] },
+                    { name: "2. 문장 구조", topics: ["명령문과 감탄문", "의문사 의문문", "there is / there are"] }
+                  ]
+                },
+                { chapter: "Ⅱ. 품사와 어휘",
+                  subChapters: [
+                    { name: "1. 명사·대명사", topics: ["명사와 관사", "인칭대명사와 소유격"] },
+                    { name: "2. 형용사·부사", topics: ["형용사와 부사", "문장의 기본 구조 (1~5형식 기초)"] }
+                  ]
+                }
+            ],
+            '중2': [
+                { chapter: "Ⅰ. 시제",
+                  subChapters: [
+                    { name: "1. 과거·미래 시제", topics: ["과거시제와 과거진행형", "미래시제 (will, be going to)"] },
+                    { name: "2. 준동사", topics: ["동명사", "to부정사 (명사적·형용사적·부사적 용법)"] }
+                  ]
+                },
+                { chapter: "Ⅱ. 문장 확장",
+                  subChapters: [
+                    { name: "1. 비교·관계", topics: ["비교급과 최상급", "관계대명사 기초"] },
+                    { name: "2. 접속사·수동태", topics: ["접속사 (when, because, if, that)", "수동태", "간접의문문"] }
+                  ]
+                }
+            ],
+            '중3': [
+                { chapter: "Ⅰ. 고급 문법",
+                  subChapters: [
+                    { name: "1. 현재완료·분사", topics: ["현재완료", "분사 (현재분사, 과거분사)", "가정법 과거"] },
+                    { name: "2. 관계사", topics: ["관계대명사 (who, which, that, what)", "관계부사"] }
+                  ]
+                },
+                { chapter: "Ⅱ. 어휘·독해",
+                  subChapters: [
+                    { name: "1. 어휘·구문", topics: ["어휘 – 고급 어휘와 구동사", "지각동사·사역동사", "부정사의 의미상 주어"] },
+                    { name: "2. 독해", topics: ["독해 – 주제·요지 파악", "독해 – 빈칸 추론"] }
+                  ]
+                }
+            ]
+        };
+
+        function selectGrade(grade) {
+            currentSelectedGrade = grade;
+
+            // 탭 버튼 시각적 활성화
+            document.querySelectorAll('.grade-tab').forEach(tab => {
+                const suffix = currentSubjectId === 'math' ? ' 수학' : ' 영어';
+                tab.classList.toggle('active', tab.innerText === grade + suffix);
+            });
+
+            // 과목에 따라 다른 DB 사용
+            const db = currentSubjectId === 'english' ? topicsByGradeEnglish : topicsByGradeMath;
+
+            // 계층형 칩 렌더링
+            const chipsContainer = document.getElementById('topicChips');
+            chipsContainer.innerHTML = '';
+            
+            const gradeData = db[grade] || [];
+            gradeData.forEach(majorNode => {
+                const chapterCard = document.createElement('div');
+                chapterCard.className = 'chapter-card';
+                
+                const title = document.createElement('h4');
+                title.innerText = majorNode.chapter;
+                chapterCard.appendChild(title);
+                
+                majorNode.subChapters.forEach(subNode => {
+                    const subChapterDiv = document.createElement('div');
+                    subChapterDiv.className = 'sub-chapter';
+                    
+                    const subTitle = document.createElement('h5');
+                    subTitle.innerText = subNode.name;
+                    subChapterDiv.appendChild(subTitle);
+                    
+                    const chipGroup = document.createElement('div');
+                    chipGroup.className = 'topic-chips';
+                    
+                    subNode.topics.forEach(topic => {
+                        const chip = document.createElement('button');
+                        chip.className = 'chip';
+                        chip.innerText = topic;
+                        chip.onclick = (e) => fillTopic(topic, e.currentTarget);
+                        chipGroup.appendChild(chip);
+                    });
+                    
+                    subChapterDiv.appendChild(chipGroup);
+                    chapterCard.appendChild(subChapterDiv);
+                });
+                
+                chipsContainer.appendChild(chapterCard);
+            });
+        }
+
+        function fillTopic(topic, element) {
+            // 모든 칩의 active 상태 초기화
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            // 클릭된 칩 시각적 포커싱
+            if (element) {
+                element.classList.add('active');
+            }
+
+            input.value = topic + " 실전 단원 평가 문항";
+            // 시각적 톡 튀는 강조
+            input.style.transform = 'scale(1.02)';
+            setTimeout(() => input.style.transform = 'scale(1)', 150);
+            
+            // 입력창 또는 AI 출제 버튼 영역으로 자동 부드러운 스크롤
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 초기 화면 로드 시 수학/중1 기본 렌더링
+        window.addEventListener('DOMContentLoaded', () => {
+            renderGradeTabs(['중1', '중2']);
+            selectGrade('중1');
+        });
+
+        // 파이썬에서 실시간으로 쏘는 상태 업데이트 함수
+        window.updateStageRealtime = function(stageNum, msg, status) {
+            // 모든 스테이지에서 active, error 등 속성을 정리하고 현재까지만 completed 켜기
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (!el) continue;
+                
+                if (i < stageNum && status !== 'error') {
+                    // 이전 스테이지들 완료 처리
+                    el.classList.remove('active', 'error');
+                    el.classList.add('completed');
+                    el.querySelector('.stage-icon').innerHTML = '✓';
+                }
+            }
+
+            const currentEl = document.getElementById(`stage${stageNum}`);
+            const currentDesc = document.getElementById(`sDesc${stageNum}`);
+            
+            if (currentEl) {
+                currentEl.classList.remove('completed', 'active', 'error');
+                
+                if (status === 'error') {
+                    currentEl.classList.add('error');
+                    currentEl.querySelector('.stage-icon').innerHTML = '✕';
+                    // 에러 발생시 이전에 켜져있던 애들도 상태 유지
+                } else if (status === 'active') {
+                    currentEl.classList.add('active');
+                    currentEl.querySelector('.stage-icon').innerHTML = '<div class="spinner">⚙️</div>';
+                } else if (status === 'done') {
+                    currentEl.classList.add('completed');
+                    currentEl.querySelector('.stage-icon').innerHTML = '✓';
+                }
+                
+                if (currentDesc) {
+                    currentDesc.innerText = msg;
+                    if (status === 'error') {
+                        currentDesc.style.color = '#ff3b30'; // 빨간색
+                    } else {
+                        currentDesc.style.color = 'var(--apple-text-muted)';
+                    }
+                }
+            }
+        };
+
+        // 엔터키(줄바꿈)를 브라우저에서 <br>로 정확히 인식하도록 옵션 설정
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        // 수학/영어 공통: ①~⑤ 객관식 보기를 예쁜 UI로 렌더링하도록 래핑하는 함수
+        function formatProblemText(text) {
+            if (!text) return '';
+            // 줄 시작이 ①~⑤로 시작하면 커스텀 div로 래핑
+            let formatted = text.replace(/^([①②③④⑤])\s*(.+)$/gm, 
+                '<div style="padding:10px 14px; margin-bottom:8px; background:var(--bg-color); border:1px solid var(--border-dark); border-radius:8px; font-size:15px; color:var(--text-main); display:flex; gap:10px; align-items:center;"><strong>$1</strong> <div style="flex:1;">$2</div></div>'
+            );
+            return marked.parse(formatted);
+        }
+
+        async function startGeneration() {
+            const topic = input.value.trim();
+            if(!topic) return;
+
+            // UI 변경
+            btn.disabled = true;
+            btn.innerText = "작업 중...";
+            input.disabled = true;
+            
+            // 진행 기록 리셋 세팅
+            document.getElementById('resultWrapper').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('problemContent').innerHTML = '';
+            document.getElementById('explanationContent').innerHTML = '';
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (el) {
+                    el.classList.remove('completed', 'active', 'error');
+                    el.querySelector('.stage-icon').innerHTML = i;
+                    document.getElementById(`sDesc${i}`).innerText = '대기 중...';
+                    document.getElementById(`sDesc${i}`).style.color = 'var(--apple-text-muted)';
+                }
+            }
+            window.updateStageRealtime(1, '파이프라인 준비 중...', 'active');
+
+            try {
+                // python 백엔드 함수 호출 - 학년과 주제 전달
+                const resultObj = await pywebview.api.generate_crew(currentSelectedGrade, topic, useFastMode, currentSubjectId);
+
+                
+                window.updateStageRealtime(4, '최종 세팅 완료 및 출력 준비 완료', 'done');
+
+                if (typeof resultObj === 'string' && resultObj.includes('오류 발생')) {
+                    throw new Error(resultObj);
+                }
+
+                // 결과 표시
+                document.getElementById('problemContent').innerHTML = formatProblemText(resultObj.problem || "문제 내용이 없습니다.");
+                document.getElementById('explanationContent').innerHTML = marked.parse(resultObj.explanation || "해설 내용이 없습니다.");
+
+                const imgContainer = document.getElementById('problemImage');
+                const imgTag = document.getElementById('mathDrawnImage');
+                if (resultObj.image) {
+                    imgTag.src = resultObj.image + "?t=" + new Date().getTime(); // 캐시 방지
+                    imgContainer.style.display = 'block';
+                } else {
+                    imgContainer.style.display = 'none';
+                }
+
+                // 구문 강조 적용
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+
+                document.getElementById('resultWrapper').style.display = 'flex';
+                
+                // 마크다운 렌더링 후 MathJax (수학 수식) 동적 렌더링 적용
+                if (window.MathJax) {
+                    MathJax.typesetPromise([document.getElementById('resultWrapper')]).catch(function (err) {
+                        console.error('MathJax typeset error:', err.message);
+                    });
+                }
+
+            } catch(e) {
+                window.updateStageRealtime(4, '통신 응답 오류 발생', 'error');
+                document.getElementById('resultWrapper').style.display = 'flex';
+                document.getElementById('problemContent').innerHTML = `<p style="color:#ff3b30; font-weight:600;">⚠️ 오류 발생: ${e.message || e}</p>`;
+                document.getElementById('explanationContent').innerHTML = '';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "📝 1문제 출제";
+                document.getElementById('examBtn').disabled = false;
+                input.disabled = false;
+            }
+        }
+
+        // ─── 시험지 출제 (10문제) ───────────────────────────────────
+        let currentPdfPath = '';
+
+        async function startExam() {
+            const topic = input.value.trim();
+            if (!topic) return;
+
+            const examBtn = document.getElementById('examBtn');
+            const genBtn  = document.getElementById('generateBtn');
+            examBtn.disabled = true;
+            const estTime = useFastMode ? "약 1~2분 소요" : "약 8분 소요";
+            examBtn.innerHTML = `⏳ 시험지 생성 중... (${estTime})`;
+            genBtn.disabled = true;
+            input.disabled = true;
+
+            // 결과 초기화
+            document.getElementById('resultWrapper').style.display = 'none';
+            document.getElementById('examResultWrapper').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (el) {
+                    el.classList.remove('completed', 'active', 'error');
+                    el.querySelector('.stage-icon').innerHTML = i;
+                    document.getElementById(`sDesc${i}`).innerText = '대기 중...';
+                }
+            }
+            window.updateStageRealtime(1, '시험지 출제 시작...', 'active');
+
+            try {
+                const result = await pywebview.api.generate_exam(currentSelectedGrade, topic, 10, useFastMode, currentSubjectId);
+
+
+                if (result.error) throw new Error(result.error);
+
+                currentPdfPath = result.pdf_path || '';
+                const problems = result.problems || [];
+
+                // 문제 목록 렌더링
+                const listEl = document.getElementById('examProblemList');
+                listEl.innerHTML = '';
+                problems.forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'exam-problem-card';
+                    const num = document.createElement('div');
+                    num.className = 'exam-problem-num';
+                    num.innerText = `문제 ${idx + 1}`;
+                    const body = document.createElement('div');
+                    body.className = 'markdown-body';
+                    body.style.fontSize = '14px';
+                    body.style.lineHeight = '1.8';
+                    body.innerHTML = formatProblemText(item.problem || '');
+                    card.appendChild(num);
+                    card.appendChild(body);
+                    listEl.appendChild(card);
+                });
+
+                const subLabel1 = currentSubjectId === 'english' ? '영어' : '수학';
+                document.getElementById('examSummary').innerText =
+                    `${currentSelectedGrade} ${subLabel1} · ${topic} · 총 ${problems.length}문제 생성 완료`;
+                document.getElementById('examResultWrapper').style.display = 'flex';
+                document.getElementById('pdfDownloadBtn').disabled = !currentPdfPath;
+
+                // MathJax 렌더링
+                if (window.MathJax) {
+                    MathJax.typesetPromise([document.getElementById('examResultWrapper')]);
+                }
+
+                window.updateStageRealtime(4, '시험지 PDF 생성 완료 ✓', 'done');
+
+            } catch(e) {
+                window.updateStageRealtime(4, '오류 발생: ' + (e.message || e), 'error');
+            } finally {
+                examBtn.disabled = false;
+                examBtn.innerHTML = "📋 시험지 출제 (10문제 → PDF)";
+                genBtn.disabled = false;
+                input.disabled = false;
+            }
+        }
+
+        async function startExamFull() {
+            const topic = input.value.trim();
+            if (!topic) return;
+
+            const examFullBtn = document.getElementById('examFullBtn');
+            const examBtn     = document.getElementById('examBtn');
+            const genBtn      = document.getElementById('generateBtn');
+            examFullBtn.disabled = true;
+            const estTime = useFastMode ? "약 2~3분 소요" : "약 15분 소요";
+            examFullBtn.innerHTML = `⏳ 생성 중... (${estTime})`;
+            examBtn.disabled = true;
+            genBtn.disabled  = true;
+            input.disabled   = true;
+
+            document.getElementById('resultWrapper').style.display = 'none';
+            document.getElementById('examResultWrapper').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (el) {
+                    el.classList.remove('completed', 'active', 'error');
+                    el.querySelector('.stage-icon').innerHTML = i;
+                    document.getElementById(`sDesc${i}`).innerText = '대기 중...';
+                }
+            }
+            window.updateStageRealtime(1, '시험지+해설 출제 시작...', 'active');
+
+            try {
+                const result = await pywebview.api.generate_exam_full(currentSelectedGrade, topic, 10, useFastMode, currentSubjectId);
+
+                if (result.error) throw new Error(result.error);
+
+                currentPdfPath = result.pdf_path || '';
+                const problems = result.problems || [];
+
+                const listEl = document.getElementById('examProblemList');
+                listEl.innerHTML = '';
+                problems.forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'exam-problem-card';
+                    const num = document.createElement('div');
+                    num.className = 'exam-problem-num';
+                    num.innerText = `문제 ${idx + 1}`;
+                    const body = document.createElement('div');
+                    body.className = 'markdown-body';
+                    body.style.fontSize = '14px';
+                    body.style.lineHeight = '1.8';
+                    body.innerHTML = formatProblemText(item.problem || '');
+                    card.appendChild(num);
+                    card.appendChild(body);
+
+                    if (item.explanation) {
+                        const expLabel = document.createElement('div');
+                        expLabel.style.cssText = 'font-weight:700;color:var(--primary);font-size:13px;margin-top:12px;margin-bottom:4px;';
+                        expLabel.innerText = '💡 해설';
+                        const expBody = document.createElement('div');
+                        expBody.style.cssText = 'font-size:13px;color:var(--text-muted);line-height:1.7;white-space:pre-wrap;';
+                        expBody.innerText = item.explanation;
+                        card.appendChild(expLabel);
+                        card.appendChild(expBody);
+                    }
+
+                    listEl.appendChild(card);
+                });
+
+                const subLabel2 = currentSubjectId === 'english' ? '영어' : '수학';
+                document.getElementById('examSummary').innerText =
+                    `${currentSelectedGrade} ${subLabel2} · ${topic} · 총 ${problems.length}문제 + 해설 완료`;
+                document.getElementById('examResultWrapper').style.display = 'flex';
+                document.getElementById('pdfDownloadBtn').disabled = !currentPdfPath;
+
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('examResultWrapper')]);
+                window.updateStageRealtime(4, '시험지+해설 PDF 완성 ✓', 'done');
+
+            } catch(e) {
+                window.updateStageRealtime(4, '오류: ' + (e.message || e), 'error');
+            } finally {
+                examFullBtn.disabled = false;
+                examFullBtn.innerHTML = "📖 시험지+해설 (10문제)";
+                examBtn.disabled = false;
+                genBtn.disabled  = false;
+                input.disabled   = false;
+            }
+        }
+
+        async function openPdf() {
+            if (!currentPdfPath) return;
+            await pywebview.api.open_pdf(currentPdfPath);
+        }
+        // ──────────────────────────────────────────────────────────────
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                startGeneration();
+            }
+        });
+
+        // ── 영어 특화 로직 ──────────────────────────────────────────────
+        let currentBBCUrl = '';
+
+        async function fetchBBCNews() {
+            const listEl = document.getElementById('bbcNewsList');
+            const btn = document.getElementById('bbcFetchBtn');
+            btn.disabled = true;
+            btn.innerText = "⏳ 뉴스 가져오는 중...";
+            listEl.innerHTML = '<div style="padding:10px; color:var(--text-muted);">가져오는 중...</div>';
+            document.getElementById('generateEnglishBtn').disabled = true;
+
+            try {
+                const newsList = await pywebview.api.fetch_bbc_news();
+                listEl.innerHTML = '';
+                if (newsList && newsList.length > 0) {
+                    newsList.forEach((news, idx) => {
+                        const div = document.createElement('div');
+                        div.style.cssText = 'padding:12px; border:1px solid var(--border-dark); border-radius:8px; cursor:pointer; background:var(--card-bg); transition:0.2s;';
+                        div.innerText = news.title;
+                        div.onclick = () => {
+                            document.querySelectorAll('#bbcNewsList div').forEach(d => {
+                                d.style.borderColor = 'var(--border-dark)';
+                                d.style.background = 'var(--card-bg)';
+                                d.style.color = 'var(--text-main)';
+                            });
+                            div.style.borderColor = '#16a34a';
+                            div.style.background = '#f0fdf4';
+                            div.style.color = '#15803d';
+                            currentBBCUrl = news.url;
+                            document.getElementById('generateEnglishBtn').disabled = false;
+                        };
+                        listEl.appendChild(div);
+                    });
+                } else {
+                    listEl.innerHTML = '<div style="color:red; font-size:13px;">가져오기 실패. 잠시 후 다시 시도해주세요.</div>';
+                }
+            } catch(e) {
+                listEl.innerHTML = `<div style="color:red; font-size:13px;">오류: ${e.message || e}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "📰 BBC 최신 뉴스 목록 다시 가져오기";
+            }
+        }
+
+        async function startEnglishGeneration() {
+            if (!currentBBCUrl) return;
+
+            const qTypeCheckboxes = document.querySelectorAll('input[name="qType"]:checked');
+            const selectedTypes = Array.from(qTypeCheckboxes).map(cb => cb.value);
+            
+            if (selectedTypes.length === 0) {
+                alert("문제 유형을 하나 이상 선택해주세요.");
+                return;
+            }
+
+            const btn = document.getElementById('generateEnglishBtn');
+            btn.disabled = true;
+            btn.innerText = "⏳ 생성 중...";
+
+            document.getElementById('resultWrapper').style.display = 'none';
+            document.getElementById('examResultWrapper').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+            const vocabCard = document.getElementById('vocabCardWrapper');
+            if (vocabCard) vocabCard.style.display = 'none';
+            
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (el) {
+                    el.classList.remove('completed', 'active', 'error');
+                    el.querySelector('.stage-icon').innerHTML = i;
+                    document.getElementById(`sDesc${i}`).innerText = '대기 중...';
+                }
+            }
+
+            window.updateStageRealtime(1, 'BBC 기사 파싱 시작...', 'active');
+
+            try {
+                const res = await pywebview.api.generate_english_set(currentSelectedGrade, currentBBCUrl, selectedTypes);
+                
+                if (res.error) throw new Error(res.error);
+
+                currentPdfPath = res.pdf_path || '';
+                const pdfBtn = document.getElementById('englishPdfBtn');
+                if(pdfBtn) {
+                    pdfBtn.style.display = currentPdfPath ? 'block' : 'none';
+                }
+
+                document.getElementById('problemTitle').textContent = `📝 BBC 기사 기반 맞춤형 영어 문제 (${currentSelectedGrade})`;
+
+                let problemHTML = `<h4>${res.title}</h4>`;
+                problemHTML += `<div style="padding:20px; background:var(--bg-color); border-radius:12px; border:1px solid var(--border-dark); font-size:16px; line-height:1.9; margin-bottom:30px; color:var(--text-main); box-shadow:0 2px 8px rgba(0,0,0,0.02);">${res.passage.replace(/\n/g, '<br>')}</div>`;
+
+                let explanationHTML = "";
+                let vocabHTML = "";
+                
+                const posMap = {
+                    'verb': '동사', 'noun': '명사', 'adjective': '형용사', 'adverb': '부사',
+                    'pronoun': '대명사', 'preposition': '전치사', 'conjunction': '접속사', 'interjection': '감탄사'
+                };
+
+                let qNum = 1;
+
+                if (res.questions) {
+                    for (const [qType, qList] of Object.entries(res.questions)) {
+                        qList.forEach((q, index) => {
+                            problemHTML += `<div style="margin-bottom:25px; padding:20px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border-dark); box-shadow:0 4px 12px rgba(0,0,0,0.03);">`;
+                            problemHTML += `<div style="font-weight:800; font-size:17px; color:var(--text-main); margin-bottom:12px;">[문제 ${qNum}] ${q.instruction}</div>`;
+                            if(q.question && q.question !== "...") {
+                                const styledQuestion = q.question.replace(/<u>/g, '<u style="text-decoration: underline; text-underline-offset: 4px; border-bottom: 2px solid var(--primary); text-decoration-color: transparent; font-weight: 800;">');
+                                problemHTML += `<div style="margin-bottom:15px; font-weight:600; color:var(--text-main); line-height:1.6; font-size:16px;">${styledQuestion}</div>`;
+                            }
+                            if(q.choices && q.choices.length > 0) {
+                                problemHTML += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                                q.choices.forEach(c => {
+                                    problemHTML += `<div style="padding:12px 16px; background:var(--bg-color); border:1px solid var(--border-dark); border-radius:8px; font-size:15px; color:var(--text-main); cursor:pointer; transition:0.2s;">${c}</div>`;
+                                });
+                                problemHTML += `</div>`;
+                            }
+                            problemHTML += `</div>`;
+
+                            explanationHTML += `<div style="margin-bottom:20px; padding:18px; border-left:5px solid #16a34a; background:#f0fdf4; border-radius:0 12px 12px 0; box-shadow:0 2px 6px rgba(0,0,0,0.03);">`;
+                            explanationHTML += `<div style="font-weight:800; font-size:16px; margin-bottom:10px; color:#15803d;">[문제 ${qNum}] 정답: ${q.answer}</div>`;
+                            if(q.explanation) {
+                                explanationHTML += `<div style="font-size:15px; color:var(--text-main); line-height:1.7;"><strong>해설:</strong> ${q.explanation}</div>`;
+                            }
+                            explanationHTML += `</div>`;
+                            
+                            qNum++;
+                        });
+                    }
+                }
+
+                if (res.vocab && res.vocab.length > 0) {
+                    vocabHTML += `<div style="display:flex; flex-direction:column; gap:12px;">`;
+                    res.vocab.forEach(v => {
+                        const korPos = posMap[v.pos.toLowerCase()] || v.pos;
+                        vocabHTML += `<div style="padding:12px 16px; background:var(--card-bg); border:1px solid var(--border-dark); border-radius:8px; display:flex; align-items:center;">
+                            <strong style="font-size:16px; color:var(--text-main); min-width:120px; flex-shrink: 0;">${v.word}</strong>
+                            <span style="font-size:13px; color:#d97706; background:#fef3c7; padding:3px 8px; border-radius:12px; margin-right:15px; font-weight:600; white-space: nowrap; flex-shrink: 0;">${korPos}</span>
+                            <span style="font-size:15px; color:var(--text-muted);">${v.definition_ko}</span>
+                        </div>`;
+                    });
+                    vocabHTML += `</div>`;
+                    document.getElementById('vocabContent').innerHTML = vocabHTML;
+                    if (vocabCard) vocabCard.style.display = 'block';
+                }
+
+                document.getElementById('problemContent').innerHTML = problemHTML;
+                document.getElementById('explanationContent').innerHTML = explanationHTML;
+                document.getElementById('problemImage').style.display = 'none';
+
+                document.getElementById('resultWrapper').style.display = 'flex';
+                window.updateStageRealtime(1, '출력 준비 완료', 'done');
+
+            } catch(e) {
+                window.updateStageRealtime(1, '오류: ' + (e.message || e), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "✨ 지문 기반 영어 문제 세트 생성";
+            }
+        }
+    </script>
+</body>
+</html>

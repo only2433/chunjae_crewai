@@ -1,0 +1,51 @@
+{
+  "subject_id": "english",
+  "label": "영어",
+  "grade_options": ["중1", "중2", "중3"],
+  "topic_options": {
+    "중1": [
+      "be동사와 일반동사",
+      "현재시제와 진행형",
+      "명사와 관사",
+      "인칭대명사와 소유격",
+      "형용사와 부사",
+      "there is / there are",
+      "조동사 (can, may, must)",
+      "의문사 의문문",
+      "명령문과 감탄문",
+      "문장의 기본 구조 (1~5형식 기초)"
+    ],
+    "중2": [
+      "과거시제와 과거진행형",
+      "미래시제 (will, be going to)",
+      "동명사",
+      "to부정사 (명사적·형용사적·부사적 용법)",
+      "비교급과 최상급",
+      "접속사 (when, because, if, that)",
+      "수동태",
+      "문장의 5형식",
+      "간접의문문",
+      "관계대명사 기초"
+    ],
+    "중3": [
+      "현재완료",
+      "관계대명사 (who, which, that, what)",
+      "관계부사",
+      "분사 (현재분사, 과거분사)",
+      "가정법 과거",
+      "지각동사·사역동사",
+      "부정사의 의미상 주어",
+      "어휘 – 고급 어휘와 구동사",
+      "독해 – 주제·요지 파악",
+      "독해 – 빈칸 추론"
+    ]
+  },
+  "question_types": [
+    { "id": "grammar",    "label": "문법형",  "weight": 35 },
+    { "id": "vocabulary", "label": "어휘형",  "weight": 30 },
+    { "id": "reading",    "label": "독해형",  "weight": 35 }
+  ],
+  "reviewer_model": "gpt-4o-mini",
+  "generator_model": "ollama/qwen3:4b",
+  "pdf_template": "english"
+}

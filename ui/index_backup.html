@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chunjae EduCrew AI</title>
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            startup: {
+                typeset: false // API 결과값을 받은 후 수동 렌더링
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --apple-bg: #f5f5f7;
+            --apple-card: rgba(255, 255, 255, 0.7);
+            --apple-text: #1d1d1f;
+            --apple-text-muted: #86868b;
+            --apple-border: rgba(0, 0, 0, 0.08);
+            --apple-accent: #0066cc;
+            --apple-accent-hover: #0077ed;
+            --apple-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --blur: blur(20px);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --apple-bg: #000000;
+                --apple-card: rgba(28, 28, 30, 0.75);
+                --apple-text: #f5f5f7;
+                --apple-text-muted: #a1a1a6;
+                --apple-border: rgba(255, 255, 255, 0.1);
+                --apple-accent: #2997ff;
+                --apple-accent-hover: #147ce5;
+                --apple-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--apple-bg);
+            color: var(--apple-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-y: auto;
+            background-image: radial-gradient(circle at 50% 0%, rgba(41, 151, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--apple-text) 0%, var(--apple-text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p {
+            font-size: 16px;
+            color: var(--apple-text-muted);
+            font-weight: 400;
+        }
+
+        /* ── Glass Card ── */
+        .glass-card {
+            background: var(--apple-card);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--apple-border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--apple-shadow);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+        }
+
+        /* ── Input Section ── */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--apple-text-muted);
+            margin-left: 4px;
+        }
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--apple-text);
+            background: rgba(120, 120, 128, 0.08);
+            border: 1px solid transparent;
+            border-radius: 18px;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        input[type="text"]::placeholder {
+            color: var(--apple-text-muted);
+            font-weight: 400;
+        }
+        input[type="text"]:focus {
+            background: var(--apple-card);
+            border-color: var(--apple-accent);
+            box-shadow: 0 0 0 4px rgba(41, 151, 255, 0.2);
+        }
+        
+        button.action-btn {
+            position: absolute;
+            right: 8px;
+            background: var(--apple-accent);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        button.action-btn:hover {
+            background: var(--apple-accent-hover);
+            transform: scale(1.02);
+        }
+        button.action-btn:active {
+            transform: scale(0.96);
+        }
+        button.action-btn:disabled {
+            background: var(--apple-text-muted);
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Grade Tabs & Topic Chips ── */
+        .grade-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 4px;
+            background: rgba(120, 120, 128, 0.08);
+            border-radius: 14px;
+            width: fit-content;
+        }
+        .grade-tab {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: var(--apple-text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .grade-tab:hover {
+            color: var(--apple-text);
+        }
+        .grade-tab.active {
+            background: var(--apple-card);
+            color: var(--apple-text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .topics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chapter-card {
+            background: rgba(120, 120, 128, 0.04);
+            border: 1px solid var(--apple-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .chapter-card h4 {
+            font-size: 16px;
+            color: var(--apple-accent);
+            font-weight: 700;
+            border-bottom: 2px solid rgba(41, 151, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .sub-chapter h5 {
+            font-size: 14px;
+            color: var(--apple-text);
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding-left: 8px;
+            border-left: 3px solid var(--apple-text-muted);
+        }
+
+        .topic-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .chip {
+            padding: 8px 16px;
+            background: rgba(41, 151, 255, 0.05);
+            border: 1px solid rgba(41, 151, 255, 0.2);
+            color: var(--apple-accent);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chip:hover {
+            background: rgba(41, 151, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(41, 151, 255, 0.1);
+        }
+        .chip.active {
+            background: var(--apple-accent);
+            color: white;
+            box-shadow: 0 4px 14px rgba(41, 151, 255, 0.4);
+            transform: scale(1.05);
+            border-color: var(--apple-accent);
+        }
+
+        /* ── Progress Indicators (Stages) ── */
+        #progressContainer {
+            display: none;
+            padding: 24px 0 10px;
+        }
+        .stage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .stage-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: rgba(120, 120, 128, 0.05);
+            border-radius: 16px;
+            opacity: 0.4;
+            transition: all 0.4s ease;
+            border: 1px solid transparent;
+        }
+        .stage-item.active {
+            opacity: 1;
+            background: var(--apple-card);
+            border-color: var(--apple-accent);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            transform: scale(1.01);
+        }
+        .stage-item.completed {
+            opacity: 0.8;
+            background: rgba(120, 120, 128, 0.02);
+        }
+        .stage-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            background: var(--apple-border);
+            color: var(--apple-text-muted);
+        }
+        .stage-item.active .stage-icon {
+            background: rgba(41, 151, 255, 0.15);
+            color: var(--apple-accent);
+            animation: pulse 2s infinite;
+        }
+        .stage-item.completed .stage-icon {
+            background: var(--apple-text);
+            color: var(--apple-bg);
+        }
+        .stage-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .stage-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .stage-desc {
+            font-size: 13px;
+            color: var(--apple-text-muted);
+            margin-top: 2px;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(41, 151, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0); }
+        }
+
+        /* ── Output Result ── */
+        #resultContainer {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+        .markdown-body {
+            font-size: 15px;
+            line-height: 1.8; /* 가독성을 위한 줄간격 확대 */
+            color: var(--apple-text);
+            overflow-wrap: break-word;
+        }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--apple-text);
+        }
+        .markdown-body h2 { font-size: 20px; border-bottom: 1px solid var(--apple-border); padding-bottom: 8px; }
+        .markdown-body h3 { font-size: 17px; }
+        .markdown-body p { margin-bottom: 16px; }
+        .markdown-body ul, .markdown-body ol { margin-bottom: 16px; padding-left: 24px; }
+        .markdown-body li { margin-bottom: 6px; }
+        .markdown-body pre {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+        .markdown-body code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 13.5px;
+            color: #d1d1d1;
+        }
+        .markdown-body p code {
+            background: rgba(120, 120, 128, 0.1);
+            color: var(--apple-accent);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>Chunjae EduCrew AI</h1>
+            <p>다중 AI 에이전트 기반 하이브리드 문항 출제 시스템</p>
+        </div>
+
+        <!-- 학년 및 기본 주제 선택 -->
+        <div class="glass-card" style="padding: 24px 32px 20px;">
+            <p style="font-size: 14px; font-weight: 600; color: var(--apple-text-muted); margin-bottom: 12px;">대상 학년을 선택하세요</p>
+            <div class="grade-tabs">
+                <button class="grade-tab active" onclick="selectGrade('중1')">중1 수학</button>
+                <button class="grade-tab" onclick="selectGrade('중2')">중2 수학</button>
+            </div>
+            <div id="topicChips" class="topics-grid">
+                <!-- JS에서 채워짐 -->
+            </div>
+        </div>
+
+        <!-- 입력 폼 -->
+        <div class="glass-card">
+            <div class="input-group">
+                <label for="topicInput">직접 입력하거나 수정할 수 있습니다</label>
+                <div class="search-wrapper">
+                    <input type="text" id="topicInput" placeholder="원하는 출제 주제를 적어주세요!" value="" />
+                    <button class="action-btn" id="generateBtn" onclick="startGeneration()">AI 출제 시작</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 진행 상태 인디케이터 -->
+        <div class="glass-card" id="progressContainer">
+            <div class="stage-list">
+                <div class="stage-item" id="stage1">
+                    <div class="stage-icon">1</div>
+                    <div class="stage-text">
+                        <span class="stage-title">출제 마스터 (Ollama)</span>
+                        <span class="stage-desc" id="sDesc1">대기 중...</span>
+                    </div>
+                </div>
+                <div class="stage-item" id="stage2">
+                    <div class="stage-icon">2</div>
+                    <div class="stage-text">
+                        <span class="stage-title">문제 체크 감수관 (OpenAI)</span>
+                        <span class="stage-desc" id="sDesc2">대기 중...</span>
+                    </div>
+                </div>
+                <div class="stage-item" id="stage3">
+                    <div class="stage-icon">3</div>
+                    <div class="stage-text">
+                        <span class="stage-title">전문 해설가 (Ollama)</span>
+                        <span class="stage-desc" id="sDesc3">대기 중...</span>
+                    </div>
+                </div>
+                <div class="stage-item" id="stage4">
+                    <div class="stage-icon">4</div>
+                    <div class="stage-text">
+                        <span class="stage-title" style="color:var(--apple-highlight)">최종 감수 위원 (OpenAI)</span>
+                        <span class="stage-desc" id="sDesc4">대기 중...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결과 출력 영역 (문제와 해설 분리) -->
+        <div id="resultWrapper" style="display: none; display: flex; flex-direction: column; gap: 24px; width: 100%;">
+            <!-- 문제 영역 -->
+            <div class="glass-card" style="border-left: 6px solid var(--apple-accent); padding: 32px 40px; background-color: #f2f7ff;">
+                <h3 style="font-size:18px; margin-bottom:16px; color:var(--apple-accent); font-weight:700;">📝 출제된 수학 문제</h3>
+                <div style="display: flex; gap: 24px; align-items: flex-start;">
+                    <div id="problemImage" style="display: none; flex-shrink: 0;">
+                        <!-- 자동 생성된 수학 코딩 그래프 표시 -->
+                        <img id="mathDrawnImage" src="" alt="자동 생성 수학 그래프" style="width: 280px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); object-fit: contain; background: white;" />
+                    </div>
+                    <div class="markdown-body" id="problemContent" style="font-size: 16px; font-weight: 500; color: #1d1d1f; line-height: 1.8; flex: 1;">
+                        <!-- 문제 마크다운 렌더링 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 해설 영역 -->
+            <div class="glass-card" style="border-left: 6px solid #34c759; padding: 32px 40px; background-color: #f2fbf4;">
+                <h3 style="font-size:18px; margin-bottom:16px; color:#28a745; font-weight:700;">💡 상세 해설 및 정답</h3>
+                <div class="markdown-body" id="explanationContent" style="font-size: 15px; color: #333; line-height: 1.7;">
+                    <!-- 해설 마크다운 렌더링 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('generateBtn');
+        const input = document.getElementById('topicInput');
+        
+        let progressInterval;
+        let currentSelectedGrade = '중1'; // 현재 선택된 학년 정보 저장
+
+        // 학년별 계층형 주제 DB
+        const topicsByGrade = {
+            '중1': [
+                {
+                    chapter: "Ⅰ. 수와 연산",
+                    subChapters: [
+                        { name: "1. 소인수분해", topics: ["소인수분해", "최대공약수", "최소공배수"] },
+                        { name: "2. 정수와 유리수", topics: ["정수와 유리수의 뜻과 대소 관계", "정수의 덧셈과 뺄셈", "유리수의 곱셈과 나눗셈"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅱ. 문자와 식",
+                    subChapters: [
+                        { name: "1. 문자의 사용과 식", topics: ["문자를 사용한 식", "식의 값", "일차식", "일차식의 계산"] },
+                        { name: "2. 일차방정식", topics: ["방정식과 그 해", "일차방정식과 그 풀이"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅲ. 좌표평면과 그래프",
+                    subChapters: [
+                        { name: "1. 좌표평면과 그래프", topics: ["순서쌍과 좌표", "그래프"] },
+                        { name: "2. 정비례와 반비례", topics: ["정비례", "반비례"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅳ. 도형의 기초",
+                    subChapters: [
+                        { name: "1. 기본 도형", topics: ["점, 선, 면, 각", "위치 관계", "평행선의 성질"] },
+                        { name: "2. 작도와 합동", topics: ["간단한 도형의 작도", "삼각형의 작도", "삼각형의 합동 조건"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅴ. 도형의 성질",
+                    subChapters: [
+                        { name: "1. 평면도형의 성질", topics: ["다각형의 내각과 외각", "다각형의 대각선", "원과 부채꼴", "부채꼴의 호의 길이와 넓이"] },
+                        { name: "2. 입체도형의 성질", topics: ["다면체와 회전체", "기둥의 겉넓이와 부피", "뿔의 겉넓이와 부피", "구의 겉넓이와 부피"] }
+                    ]
+                },
+                {
+                    chapter: "Ⅵ. 통계",
+                    subChapters: [
+                        { name: "1. 자료의 정리와 해석", topics: ["대푯값", "도수분포표", "히스토그램과 도수분포다각형", "상대도수", "통계적 탐구 문제"] }
+                    ]
+                }
+            ],
+            '중2': [
+                {
+                    chapter: "Ⅰ. 수와 식",
+                    subChapters: [
+                        { name: "1. 유리수와 순환소수", topics: ['유리수의 소수 표현', '순환소수의 분수 표현'] },
+                        { name: "2. 식의 계산", topics: ['지수법칙', '단항식의 계산', '다항식의 계산'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅱ. 부등식과 연립방정식",
+                    subChapters: [
+                        { name: "1. 연립일차부등식", topics: ['부등식과 그 해', '부등식의 성질', '일차부등식의 풀이'] },
+                        { name: "2. 연립일차방정식", topics: ['연립일차방정식과 그 해', '연립일차방정식의 풀이', '연립일차방정식의 활용'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅲ. 일차함수",
+                    subChapters: [
+                        { name: "1. 일차함수와 그 그래프", topics: ['함수의 뜻', '일차함수의 뜻과 그래프', '절편과 기울기', '일차함수의 그래프의 성질'] },
+                        { name: "2. 일차함수와 일차방정식", topics: ['일차함수와 일차방정식', '일차함수의 식 구하기', '일차함수의 그래프와 연립일차방정식'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅳ. 삼각형과 사각형의 성질",
+                    subChapters: [
+                        { name: "1. 삼각형의 성질", topics: ['이등변삼각형과 직각삼각형', '삼각형의 외심', '삼각형의 내심'] },
+                        { name: "2. 사각형의 성질", topics: ['평행사변형', '여러 가지 사각형'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅴ. 도형의 닮음과 피타고라스 정리",
+                    subChapters: [
+                        { name: "1. 도형의 닮음", topics: ['도형의 닮음', '삼각형의 닮음 조건', '평행선과 선분의 길이의 비', '삼각형의 무게중심'] },
+                        { name: "2. 피타고라스 정리", topics: ['피타고라스 정리의 이해', '피타고라스 정리의 활용'] }
+                    ]
+                },
+                {
+                    chapter: "Ⅵ. 확률",
+                    subChapters: [
+                        { name: "1. 경우의 수와 확률", topics: ['경우의 수', '확률의 뜻', '확률의 성질', '확률의 계산'] }
+                    ]
+                }
+            ]
+        };
+
+        function selectGrade(grade) {
+            currentSelectedGrade = grade;
+            
+            // 탭 버튼 시각적 활성화 전환 (오류 해결: 전역 event 대신 텍스트 매칭 방식 사용)
+            document.querySelectorAll('.grade-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.innerText === grade + ' 수학') {
+                    tab.classList.add('active');
+                }
+            });
+
+            // 계층형 칩 렌더링
+            const chipsContainer = document.getElementById('topicChips');
+            chipsContainer.innerHTML = '';
+            
+            const gradeData = topicsByGrade[grade];
+            gradeData.forEach(majorNode => {
+                const chapterCard = document.createElement('div');
+                chapterCard.className = 'chapter-card';
+                
+                const title = document.createElement('h4');
+                title.innerText = majorNode.chapter;
+                chapterCard.appendChild(title);
+                
+                majorNode.subChapters.forEach(subNode => {
+                    const subChapterDiv = document.createElement('div');
+                    subChapterDiv.className = 'sub-chapter';
+                    
+                    const subTitle = document.createElement('h5');
+                    subTitle.innerText = subNode.name;
+                    subChapterDiv.appendChild(subTitle);
+                    
+                    const chipGroup = document.createElement('div');
+                    chipGroup.className = 'topic-chips';
+                    
+                    subNode.topics.forEach(topic => {
+                        const chip = document.createElement('button');
+                        chip.className = 'chip';
+                        chip.innerText = topic;
+                        chip.onclick = (e) => fillTopic(topic, e.currentTarget);
+                        chipGroup.appendChild(chip);
+                    });
+                    
+                    subChapterDiv.appendChild(chipGroup);
+                    chapterCard.appendChild(subChapterDiv);
+                });
+                
+                chipsContainer.appendChild(chapterCard);
+            });
+        }
+
+        function fillTopic(topic, element) {
+            // 모든 칩의 active 상태 초기화
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            // 클릭된 칩 시각적 포커싱
+            if (element) {
+                element.classList.add('active');
+            }
+
+            input.value = topic + " 실전 단원 평가 문항";
+            // 시각적 톡 튀는 강조
+            input.style.transform = 'scale(1.02)';
+            setTimeout(() => input.style.transform = 'scale(1)', 150);
+            
+            // 입력창 또는 AI 출제 버튼 영역으로 자동 부드러운 스크롤
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 초기 화면 로드 시 중1 수학 기본 렌더링
+        window.addEventListener('DOMContentLoaded', () => {
+            selectGrade('중1');
+        });
+
+        // 파이썬에서 실시간으로 쏘는 상태 업데이트 함수
+        window.updateStageRealtime = function(stageNum, msg, status) {
+            // 모든 스테이지에서 active, error 등 속성을 정리하고 현재까지만 completed 켜기
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (!el) continue;
+                
+                if (i < stageNum && status !== 'error') {
+                    // 이전 스테이지들 완료 처리
+                    el.classList.remove('active', 'error');
+                    el.classList.add('completed');
+                    el.querySelector('.stage-icon').innerHTML = '✓';
+                }
+            }
+
+            const currentEl = document.getElementById(`stage${stageNum}`);
+            const currentDesc = document.getElementById(`sDesc${stageNum}`);
+            
+            if (currentEl) {
+                currentEl.classList.remove('completed', 'active', 'error');
+                
+                if (status === 'error') {
+                    currentEl.classList.add('error');
+                    currentEl.querySelector('.stage-icon').innerHTML = '✕';
+                    // 에러 발생시 이전에 켜져있던 애들도 상태 유지
+                } else if (status === 'active') {
+                    currentEl.classList.add('active');
+                    currentEl.querySelector('.stage-icon').innerHTML = '<div class="spinner">⚙️</div>';
+                } else if (status === 'done') {
+                    currentEl.classList.add('completed');
+                    currentEl.querySelector('.stage-icon').innerHTML = '✓';
+                }
+                
+                if (currentDesc) {
+                    currentDesc.innerText = msg;
+                    if (status === 'error') {
+                        currentDesc.style.color = '#ff3b30'; // 빨간색
+                    } else {
+                        currentDesc.style.color = 'var(--apple-text-muted)';
+                    }
+                }
+            }
+        };
+
+        // 엔터키(줄바꿈)를 브라우저에서 <br>로 정확히 인식하도록 옵션 설정
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        async function startGeneration() {
+            const topic = input.value.trim();
+            if(!topic) return;
+
+            // UI 변경
+            btn.disabled = true;
+            btn.innerText = "작업 중...";
+            input.disabled = true;
+            
+            // 진행 기록 리셋 세팅
+            document.getElementById('resultWrapper').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('problemContent').innerHTML = '';
+            document.getElementById('explanationContent').innerHTML = '';
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById(`stage${i}`);
+                if (el) {
+                    el.classList.remove('completed', 'active', 'error');
+                    el.querySelector('.stage-icon').innerHTML = i;
+                    document.getElementById(`sDesc${i}`).innerText = '대기 중...';
+                    document.getElementById(`sDesc${i}`).style.color = 'var(--apple-text-muted)';
+                }
+            }
+            window.updateStageRealtime(1, '파이프라인 준비 중...', 'active');
+
+            try {
+                // python 백엔드 함수 호출 - 학년과 주제 전달
+                const resultObj = await pywebview.api.generate_crew(currentSelectedGrade, topic);
+                
+                window.updateStageRealtime(4, '최종 세팅 완료 및 출력 준비 완료', 'done');
+
+                if (typeof resultObj === 'string' && resultObj.includes('오류 발생')) {
+                    throw new Error(resultObj);
+                }
+
+                // 결과 표시
+                document.getElementById('problemContent').innerHTML = marked.parse(resultObj.problem || "문제 내용이 없습니다.");
+                document.getElementById('explanationContent').innerHTML = marked.parse(resultObj.explanation || "해설 내용이 없습니다.");
+
+                const imgContainer = document.getElementById('problemImage');
+                const imgTag = document.getElementById('mathDrawnImage');
+                if (resultObj.image) {
+                    imgTag.src = resultObj.image + "?t=" + new Date().getTime(); // 캐시 방지
+                    imgContainer.style.display = 'block';
+                } else {
+                    imgContainer.style.display = 'none';
+                }
+
+                // 구문 강조 적용
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+
+                document.getElementById('resultWrapper').style.display = 'flex';
+                
+                // 마크다운 렌더링 후 MathJax (수학 수식) 동적 렌더링 적용
+                if (window.MathJax) {
+                    MathJax.typesetPromise([document.getElementById('resultWrapper')]).catch(function (err) {
+                        console.error('MathJax typeset error:', err.message);
+                    });
+                }
+
+            } catch(e) {
+                window.updateStageRealtime(4, '통신 응답 오류 발생', 'error');
+                document.getElementById('resultWrapper').style.display = 'flex';
+                document.getElementById('problemContent').innerHTML = `<p style="color:#ff3b30; font-weight:600;">⚠️ 오류 발생: ${e.message || e}</p>`;
+                document.getElementById('explanationContent').innerHTML = '';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "AI 생성 시작";
+                input.disabled = false;
+            }
+        }
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                startGeneration();
+            }
+        });
+    </script>
+</body>
+</html>
