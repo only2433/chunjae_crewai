@@ -54,17 +54,18 @@ def _remove_answer_leak(text: str) -> str:
 
 # ── 그래프/도형 이미지 생성 (수학 전용) ─────────────────────────────────────
 
-def _run_python_illustrator(prob_text: str, force_draw: bool = False) -> str | None:
+def _run_python_illustrator(prob_text: str, force_draw: bool = False, filename: str = "ui/problem_image.png") -> str | None:
     """
     문제 텍스트를 분석하여 matplotlib 시각화 코드를 GPT-4o로 생성하고,
-    서브프로세스로 실행하여 ui/problem_image.png를 저장합니다.
+    서브프로세스로 실행하여 이미지를 저장합니다.
 
     Args:
         prob_text: 분석할 문제 텍스트
         force_draw: True이면 판단을 무시하고 무조건 그림을 그리도록 강제
+        filename: 저장할 파일 경로 (기본값: "ui/problem_image.png")
 
     Returns:
-        "problem_image.png" — 이미지 생성 성공
+        filename — 이미지 생성 성공
         "NO_IMAGE_NEEDED"   — 시각화 불필요
         None                — 생성 실패
     """
@@ -76,7 +77,7 @@ Problem: {prob_text}
 Requirements:
 1. **DECISION**: If the problem is purely algebraic, equations, simple arithmetic, or does not heavily rely on visual intuition (e.g., 'sum of two numbers is 15', polynomials, inequalities), you MUST reply exactly with the string: \"NO_IMAGE_NEEDED\" and nothing else.
 2. If visualization is needed, strictly follow these drawing rules:
-   - The script MUST save the plot directly to exactly 'ui/problem_image.png' using `plt.savefig('ui/problem_image.png', bbox_inches='tight', dpi=300)`. Do NOT use `plt.show()`.
+   - The script MUST save the plot directly to exactly '{filename}' using `plt.savefig('{filename}', bbox_inches='tight', dpi=300)`. Do NOT use `plt.show()`.
    - Support Korean font on Windows by adding: `import matplotlib.pyplot as plt`, `plt.rcParams['font.family'] = 'Malgun Gothic'`, `plt.rcParams['axes.unicode_minus'] = False`
    - Make the drawing visually appealing and extremely clear. **DO NOT FILL SOLID COLORS in geometric shapes (no facecolors).** For 3D geometries (cube, cylinder), leave the faces completely transparent (e.g., `facecolor='none'` or `fill=False`) and draw ONLY the outlines(edges) with solid black lines. Hidden edges should be drawn with dashed lines (`linestyle='dashed'`).
    - **CRITICAL WARNING FOR SPOILERS**: ONLY draw and label the numbers that are EXPLICITLY given in the problem. Do NOT solve the problem!
@@ -153,9 +154,11 @@ finally:
         if os.path.exists(script_path):
             os.remove(script_path)
 
-        img_dest = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ui", "problem_image.png")
+        img_dest = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), filename)
         if os.path.exists(img_dest):
-            return "problem_image.png"
+            # return path relative to ui folder since that's how it's used in HTML
+            # e.g., if filename is "ui/problem_image_0.png", return "problem_image_0.png"
+            return os.path.basename(filename)
         return None
 
     except subprocess.CalledProcessError as e:
@@ -163,8 +166,8 @@ finally:
     except Exception as e:
         print(f"[pipeline] 시각화 생성 오류: {e}")
     finally:
-        if os.path.exists("temp_drawer.py"):
-            os.remove("temp_drawer.py")
+        if os.path.exists(script_path):
+            os.remove(script_path)
     return None
 
 
@@ -362,7 +365,8 @@ def run_exam_pipeline(
     count: int = 10,
     progress_callback=None,
     with_explanation: bool = False,
-    use_fast: bool = False
+    use_fast: bool = False,
+    require_image: bool = False
 ) -> dict:
     """
     시험지 모드: count개의 문제를 순차 생성 후 PDF로 반환합니다.
@@ -451,25 +455,37 @@ def run_exam_pipeline(
 
         # 해설 생성 (with_explanation 모드)
         final_explanation = ""
-        if with_explanation and explainer:
-            notify(3, f"문제 {i + 1}/{count} 해설 생성 중...", "active")
-            try:
-                task3 = subject.get_explanation_task(explainer, [])
-                task3.description = (
-                    f"다음은 검수가 완료된 최종 {subject.label} 문제입니다.\n\n[확정 문제]:\n{final_problem}\n\n---\n"
-                    + task3.description
-                )
-                crew_exp = Crew(agents=[explainer], tasks=[task3], process=Process.sequential, verbose=False)
-                crew_exp.kickoff()
-                raw_exp = task3.output.raw if hasattr(task3.output, 'raw') else str(task3.output)
-                import re as _re
-                final_explanation = _re.sub(r'<[^>]+>', '', raw_exp).strip()
-            except Exception as e:
-                print(f"[pipeline] 해설 생성 오류 (문제 {i + 1}): {e}")
-            notify(3, f"문제 {i + 1}/{count} 해설 완료", "done")
+        img_path = None
+        
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_image = None
+            if require_image and subject.subject_id == "math":
+                import uuid
+                unique_filename = f"ui/problem_image_{uuid.uuid4().hex[:8]}.png"
+                future_image = executor.submit(lambda: _run_python_illustrator(final_problem, force_draw=True, filename=unique_filename))
+
+            if with_explanation and explainer:
+                notify(3, f"문제 {i + 1}/{count} 해설 생성 중...", "active")
+                try:
+                    task3 = subject.get_explanation_task(explainer, [])
+                    task3.description = (
+                        f"다음은 검수가 완료된 최종 {subject.label} 문제입니다.\n\n[확정 문제]:\n{final_problem}\n\n---\n"
+                        + task3.description
+                    )
+                    crew_exp = Crew(agents=[explainer], tasks=[task3], process=Process.sequential, verbose=False)
+                    crew_exp.kickoff()
+                    raw_exp = task3.output.raw if hasattr(task3.output, 'raw') else str(task3.output)
+                    import re as _re
+                    final_explanation = _re.sub(r'<[^>]+>', '', raw_exp).strip()
+                except Exception as e:
+                    print(f"[pipeline] 해설 생성 오류 (문제 {i + 1}): {e}")
+                notify(3, f"문제 {i + 1}/{count} 해설 완료", "done")
+                
+            if future_image:
+                img_path = future_image.result()
 
         notify(1, f"문제 {i + 1}/{count} 완료", "done")
-        problems_list.append({"problem": final_problem, "explanation": final_explanation, "number": i + 1})
+        problems_list.append({"problem": final_problem, "explanation": final_explanation, "image": img_path, "number": i + 1})
 
 
     # PDF 생성

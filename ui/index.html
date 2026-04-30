@@ -1332,6 +1332,18 @@
                     body.innerHTML = formatProblemText(item.problem || '');
                     card.appendChild(num);
                     card.appendChild(body);
+                    
+                    if (item.image) {
+                        const img = document.createElement('img');
+                        img.src = item.image + '?t=' + new Date().getTime();
+                        img.className = 'problem-image';
+                        img.style.maxWidth = '100%';
+                        img.style.marginTop = '12px';
+                        img.style.borderRadius = '8px';
+                        img.style.border = '1px solid var(--border)';
+                        card.appendChild(img);
+                    }
+                    
                     listEl.appendChild(card);
                 });
 
@@ -1409,6 +1421,17 @@
                     body.innerHTML = formatProblemText(item.problem || '');
                     card.appendChild(num);
                     card.appendChild(body);
+
+                    if (item.image) {
+                        const img = document.createElement('img');
+                        img.src = item.image + '?t=' + new Date().getTime();
+                        img.className = 'problem-image';
+                        img.style.maxWidth = '100%';
+                        img.style.marginTop = '12px';
+                        img.style.borderRadius = '8px';
+                        img.style.border = '1px solid var(--border)';
+                        card.appendChild(img);
+                    }
 
                     if (item.explanation) {
                         const expLabel = document.createElement('div');

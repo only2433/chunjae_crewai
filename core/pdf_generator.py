@@ -181,6 +181,19 @@ def _generate_math_pdf(problems_list: list, grade: str, topic: str, output_dir: 
         for idx, item in enumerate(problems_list, 1):
             prob_text = strip_html_and_latex(item.get("problem", ""))
             story.append(Paragraph(f"문제 {idx}.", style_qnum))
+            
+            img_path = item.get("image")
+            if img_path:
+                from reportlab.platypus import Image
+                abs_img_path = os.path.join(output_dir, img_path)
+                if os.path.exists(abs_img_path):
+                    try:
+                        story.append(Spacer(1, 0.2 * cm))
+                        story.append(Image(abs_img_path, width=10*cm, height=8*cm, kind='proportional'))
+                        story.append(Spacer(1, 0.2 * cm))
+                    except Exception as e:
+                        print(f"PDF 이미지 삽입 오류: {e}")
+
             for line in prob_text.split('\n'):
                 line = line.strip()
                 if line:
