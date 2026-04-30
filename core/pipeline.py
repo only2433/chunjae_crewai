@@ -80,7 +80,7 @@ Requirements:
    - The script MUST save the plot directly to exactly '{filename}' using `plt.savefig('{filename}', bbox_inches='tight', dpi=300)`. Do NOT use `plt.show()`.
    - Support Korean font on Windows by adding: `import matplotlib.pyplot as plt`, `plt.rcParams['font.family'] = 'Malgun Gothic'`, `plt.rcParams['axes.unicode_minus'] = False`
    - Make the drawing visually appealing and extremely clear. **DO NOT FILL SOLID COLORS in geometric shapes (no facecolors).** For 3D geometries (cube, cylinder), leave the faces completely transparent (e.g., `facecolor='none'` or `fill=False`) and draw ONLY the outlines(edges) with solid black lines. Hidden edges should be drawn with dashed lines (`linestyle='dashed'`).
-   - **CRITICAL WARNING FOR SPOILERS**: ONLY draw and label the numbers that are EXPLICITLY given in the problem. Do NOT solve the problem!
+   - **CRITICAL WARNING FOR SPOILERS**: NEVER label, highlight, or display the exact answer the problem is asking for. For example, if the problem asks for the 'y-intercept', you MUST NOT label the coordinates of that intercept on the graph. ONLY draw and label the numbers/constants that are EXPLICITLY given in the problem text as 'known' values. Do NOT solve the problem in the drawing!
    - **DO NOT USE `mplot3d` OR `Axes3D` AT ALL**: Draws 3D geometries as 2D orthographic projections using simple 2D transparent lines and shapes (`matplotlib.patches.Polygon`, `Line2D`, `fill=False`).
    - Only output pure Python code inside a ```python ``` block. Do not write any other explanations.
 
